@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Session } from '../models/session';
 import {
   BrowserVault,
   DeviceSecurityType,
@@ -7,8 +6,8 @@ import {
   Vault,
   VaultType,
 } from '@ionic-enterprise/identity-vault';
-import { VaultFactoryService } from './vault-factory.service';
 import { BehaviorSubject } from 'rxjs';
+import { VaultFactoryService } from './vault-factory.service';
 
 export type UnlockMode = 'Device' | 'SessionPIN' | 'NeverLock' | 'ForceLogin';
 
@@ -16,10 +15,9 @@ export type UnlockMode = 'Device' | 'SessionPIN' | 'NeverLock' | 'ForceLogin';
   providedIn: 'root',
 })
 export class VaultService {
+  vault: BrowserVault | Vault;
+
   private canUnlockSubject: BehaviorSubject<boolean>;
-  private session: Session;
-  private sessionKey = 'session';
-  private vault: BrowserVault | Vault;
 
   constructor(vaultFactory: VaultFactoryService, private zone: NgZone) {
     const config: IdentityVaultConfig = {
@@ -37,12 +35,11 @@ export class VaultService {
 
     this.vault.onLock(() => {
       this.zone.run(() => {
-        this.session = undefined;
         this.canUnlockSubject.next(true);
       });
     });
 
-    this.vault.onUnlock(() => console.log('The vault has been unlocked'));
+    this.vault.onUnlock(() => this.zone.run(() => this.canUnlockSubject.next(false)));
 
     this.canUnlock().then((x) => this.canUnlockSubject.next(x));
 
@@ -56,34 +53,7 @@ export class VaultService {
     return this.canUnlockSubject.asObservable();
   }
 
-  async setSession(session: Session, unlockMode: UnlockMode): Promise<void> {
-    await this.setUnlockMode(unlockMode);
-    this.session = session;
-    await this.vault.setValue(this.sessionKey, session);
-  }
-
-  async clearSession(): Promise<void> {
-    await this.vault.clear();
-    this.session = undefined;
-    await this.setUnlockMode('NeverLock');
-  }
-
-  async restoreSession(): Promise<Session> {
-    if (!this.session) {
-      this.session = await this.vault.getValue(this.sessionKey);
-      this.canUnlockSubject.next(false);
-    }
-    return this.session;
-  }
-
-  private async canUnlock(): Promise<boolean> {
-    if (!(await this.vault.isEmpty()) && (await this.vault.isLocked())) {
-      return true;
-    }
-    return false;
-  }
-
-  private async setUnlockMode(unlockMode: UnlockMode): Promise<void> {
+  async setUnlockMode(unlockMode: UnlockMode): Promise<void> {
     let type: VaultType;
     let deviceSecurityType: DeviceSecurityType;
 
@@ -118,5 +88,12 @@ export class VaultService {
       type,
       deviceSecurityType,
     });
+  }
+
+  private async canUnlock(): Promise<boolean> {
+    if (!(await this.vault.isEmpty()) && (await this.vault.isLocked())) {
+      return true;
+    }
+    return false;
   }
 }

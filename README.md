@@ -10,5 +10,5 @@ A simple use case of IV all in one page.
 
 Credentials:
 
-- **email:** test@test.com
-- **password:** test
+- **email:** test@ionic.io
+- **password:** Ion54321
