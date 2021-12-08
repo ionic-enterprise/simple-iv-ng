@@ -16,9 +16,7 @@ export type UnlockMode = 'Device' | 'SessionPIN' | 'NeverLock' | 'ForceLogin';
   providedIn: 'root',
 })
 export class VaultService {
-  private vault: BrowserVault | Vault;
-  private session: Session;
-  private sessionKey = 'session';
+  vault: BrowserVault | Vault;
 
   private canUnlockSubject: BehaviorSubject<boolean>;
   get canUnlock$() {
@@ -41,34 +39,13 @@ export class VaultService {
 
     this.vault.onLock(() => {
       this.zone.run(() => {
-        this.session = undefined;
         this.canUnlockSubject.next(true);
       });
     });
 
-    this.vault.onUnlock(() => console.log('The vault has been unlocked'));
+    this.vault.onUnlock(() =>this.zone.run(() =>  this.canUnlockSubject.next(false)));
 
     this.canUnlock().then((x) => this.canUnlockSubject.next(x));
-  }
-
-  async setSession(session: Session, unlockMode: UnlockMode): Promise<void> {
-    await this.setUnlockMode(unlockMode);
-    this.session = session;
-    await this.vault.setValue(this.sessionKey, session);
-  }
-
-  async clearSession(): Promise<void> {
-    this.session = undefined;
-    this.setUnlockMode('NeverLock');
-    return this.vault.clear();
-  }
-
-  async restoreSession(): Promise<Session> {
-    if (!this.session) {
-      this.session = await this.vault.getValue(this.sessionKey);
-      this.canUnlockSubject.next(false);
-    }
-    return this.session;
   }
 
   private async canUnlock(): Promise<boolean> {
@@ -78,7 +55,7 @@ export class VaultService {
     return false;
   }
 
-  private setUnlockMode(unlockMode: UnlockMode): Promise<void> {
+  setUnlockMode(unlockMode: UnlockMode): Promise<void> {
     let type: VaultType;
     let deviceSecurityType: DeviceSecurityType;
 

@@ -19,25 +19,20 @@ export class HomePage {
     Device.setHideScreenOnBackground(true);
   }
 
-  signIn() {
-    this.auth.login(this.email, this.password).subscribe(async (s) => {
-      if (s.user) {
-        const hasPasscode = await Device.isSystemPasscodeSet();
-        this.vault.setSession(s, hasPasscode ? 'Device' : 'NeverLock');
-        this.hasSession = true;
-      }
-    });
+  async signIn() {
+    await this.auth.login();
+    const hasPasscode = await Device.isSystemPasscodeSet();
+    this.vault.setUnlockMode(hasPasscode ? 'Device' : 'NeverLock');
+    this.hasSession = true;
   }
 
-  signOut() {
-    this.auth.logout().subscribe(async () => {
-      this.vault.clearSession();
-      this.hasSession = false;
-    });
+  async signOut() {
+    await this.auth.logout();
+    this.hasSession = false;
   }
 
   async unlock() {
-    await this.vault.restoreSession();
+    await this.vault.vault.unlock();
     this.hasSession = true;
   }
 }
