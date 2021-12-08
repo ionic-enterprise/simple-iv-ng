@@ -1,4 +1,3 @@
-   
 import { Injectable } from '@angular/core';
 import { BrowserVault, IdentityVaultConfig, Vault } from '@ionic-enterprise/identity-vault';
 import { Platform } from '@ionic/angular';

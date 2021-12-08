@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Session } from '../models/session';
 import {
   BrowserVault,
@@ -8,7 +8,7 @@ import {
   VaultType,
 } from '@ionic-enterprise/identity-vault';
 import { VaultFactoryService } from './vault-factory.service';
-import {BehaviorSubject} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 export type UnlockMode = 'Device' | 'SessionPIN' | 'NeverLock' | 'ForceLogin';
 
@@ -25,26 +25,30 @@ export class VaultService {
     return this.canUnlockSubject.asObservable();
   }
 
-  constructor(
-    vaultFactory: VaultFactoryService
-  ) {
+  constructor(vaultFactory: VaultFactoryService, private zone: NgZone) {
     const config: IdentityVaultConfig = {
       key: 'io.ionic.simpleiv',
       type: VaultType.SecureStorage,
-      lockAfterBackgrounded: 5000,
+      lockAfterBackgrounded: 1000,
       shouldClearVaultAfterTooManyFailedAttempts: true,
       customPasscodeInvalidUnlockAttempts: 2,
       unlockVaultOnLoad: false,
     };
 
-    this.canUnlockSubject = new BehaviorSubject(false)
+    this.canUnlockSubject = new BehaviorSubject(false);
 
     this.vault = vaultFactory.create(config);
 
     this.vault.onLock(() => {
-      this.session = undefined;
-      this.canUnlockSubject.next(true);
+      this.zone.run(() => {
+        this.session = undefined;
+        this.canUnlockSubject.next(true);
+      });
     });
+
+    this.vault.onUnlock(() => console.log('The vault has been unlocked'));
+
+    this.canUnlock().then((x) => this.canUnlockSubject.next(x));
   }
 
   async setSession(session: Session, unlockMode: UnlockMode): Promise<void> {
@@ -67,7 +71,7 @@ export class VaultService {
     return this.session;
   }
 
-  private async  canUnlock(): Promise<boolean> {
+  private async canUnlock(): Promise<boolean> {
     if ((await this.vault.doesVaultExist()) && (await this.vault.isLocked())) {
       return true;
     }
