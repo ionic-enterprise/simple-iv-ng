@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../core/auth.service';
 import { VaultService } from '../core/vault.service';
-import {Device} from '@ionic-enterprise/identity-vault'
+import { Device } from '@ionic-enterprise/identity-vault';
 
 @Component({
   selector: 'app-home',
@@ -23,14 +23,17 @@ export class HomePage {
     this.auth.login(this.email, this.password).subscribe(async (s) => {
       if (s.user) {
         const hasPasscode = await Device.isSystemPasscodeSet();
-        this.vault.setSession(s, hasPasscode? 'Device' : 'NeverLock');
+        this.vault.setSession(s, hasPasscode ? 'Device' : 'NeverLock');
         this.hasSession = true;
       }
     });
   }
 
   signOut() {
-    this.auth.logout().subscribe(() => this.hasSession = false);
+    this.auth.logout().subscribe(async () => {
+      this.vault.clearSession();
+      this.hasSession = false;
+    });
   }
 
   async unlock() {
