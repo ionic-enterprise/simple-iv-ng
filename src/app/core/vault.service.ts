@@ -49,18 +49,28 @@ export class VaultService {
     this.vault.onUnlock(() => console.log('The vault has been unlocked'));
 
     this.canUnlock().then((x) => this.canUnlockSubject.next(x));
+
+    this.vault.onError((err) => {
+      console.log('onError', err);
+      this.vault.clear();
+    });
   }
 
   async setSession(session: Session, unlockMode: UnlockMode): Promise<void> {
+    console.log('start setSession');
     await this.setUnlockMode(unlockMode);
     this.session = session;
+    console.log('setSession set value');
     await this.vault.setValue(this.sessionKey, session);
+    console.log('end setSession');
   }
 
   async clearSession(): Promise<void> {
+    console.log('clearSession');
+    await this.vault.clear();
     this.session = undefined;
-    this.setUnlockMode('NeverLock');
-    return this.vault.clear();
+    await this.setUnlockMode('NeverLock');
+    console.log('end clearSession', await this.vault.isEmpty());
   }
 
   async restoreSession(): Promise<Session> {
@@ -72,16 +82,17 @@ export class VaultService {
   }
 
   private async canUnlock(): Promise<boolean> {
-    if ((await this.vault.doesVaultExist()) && (await this.vault.isLocked())) {
+    if (!(await this.vault.isEmpty()) && (await this.vault.isLocked())) {
       return true;
     }
     return false;
   }
 
-  private setUnlockMode(unlockMode: UnlockMode): Promise<void> {
+  private async setUnlockMode(unlockMode: UnlockMode): Promise<void> {
     let type: VaultType;
     let deviceSecurityType: DeviceSecurityType;
 
+    console.log('setUnlockMode', unlockMode);
     switch (unlockMode) {
       case 'Device':
         type = VaultType.DeviceSecurity;
@@ -108,10 +119,12 @@ export class VaultService {
         deviceSecurityType = DeviceSecurityType.SystemPasscode;
     }
 
-    return this.vault.updateConfig({
+    console.log('setUnlockMode update');
+    await this.vault.updateConfig({
       ...this.vault.config,
       type,
       deviceSecurityType,
     });
+    console.log('end setUnlockMode', unlockMode);
   }
 }

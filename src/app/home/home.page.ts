@@ -23,7 +23,8 @@ export class HomePage {
     this.auth.login(this.email, this.password).subscribe(async (s) => {
       if (s.user) {
         const hasPasscode = await Device.isSystemPasscodeSet();
-        this.vault.setSession(s, hasPasscode ? 'Device' : 'NeverLock');
+        await this.vault.clearSession();
+        await this.vault.setSession(s, hasPasscode ? 'Device' : 'NeverLock');
         this.hasSession = true;
       }
     });
@@ -37,7 +38,12 @@ export class HomePage {
   }
 
   async unlock() {
+    try {
     await this.vault.restoreSession();
     this.hasSession = true;
+    } catch(err) {
+      alert('going to clear the session');
+      this.vault.clearSession();
+    }
   }
 }
