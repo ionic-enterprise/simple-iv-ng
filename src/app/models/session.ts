@@ -4,4 +4,3 @@ export interface Session {
   user: User;
   token: string;
 }
-

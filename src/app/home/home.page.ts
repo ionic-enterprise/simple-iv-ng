@@ -39,9 +39,9 @@ export class HomePage {
 
   async unlock() {
     try {
-    await this.vault.restoreSession();
-    this.hasSession = true;
-    } catch(err) {
+      await this.vault.restoreSession();
+      this.hasSession = true;
+    } catch (err) {
       alert('going to clear the session');
       this.vault.clearSession();
     }

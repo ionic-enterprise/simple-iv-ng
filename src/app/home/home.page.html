@@ -1,12 +1,10 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Home
-    </ion-title>
+    <ion-title> Home </ion-title>
   </ion-toolbar>
 </ion-header>
 
- <ion-content class="main-content">
+<ion-content class="main-content">
   <form #loginForm="ngForm">
     <div *ngIf="!canUnlock && !hasSession">
       <ion-list>
@@ -45,7 +43,12 @@
 
 <ion-footer *ngIf="!canUnlock">
   <ion-toolbar>
-    <ion-button *ngIf="!hasSession" id="signin-button" expand="full" [disabled]="!loginForm.form.valid" (click)="signIn()"
+    <ion-button
+      *ngIf="!hasSession"
+      id="signin-button"
+      expand="full"
+      [disabled]="!loginForm.form.valid"
+      (click)="signIn()"
       >Sign In
       <ion-icon slot="end" name="log-in-outline"></ion-icon>
     </ion-button>

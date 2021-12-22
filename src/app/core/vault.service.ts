@@ -16,14 +16,10 @@ export type UnlockMode = 'Device' | 'SessionPIN' | 'NeverLock' | 'ForceLogin';
   providedIn: 'root',
 })
 export class VaultService {
-  private vault: BrowserVault | Vault;
+  private canUnlockSubject: BehaviorSubject<boolean>;
   private session: Session;
   private sessionKey = 'session';
-
-  private canUnlockSubject: BehaviorSubject<boolean>;
-  get canUnlock$() {
-    return this.canUnlockSubject.asObservable();
-  }
+  private vault: BrowserVault | Vault;
 
   constructor(vaultFactory: VaultFactoryService, private zone: NgZone) {
     const config: IdentityVaultConfig = {
@@ -54,6 +50,10 @@ export class VaultService {
       console.log('onError', err);
       this.vault.clear();
     });
+  }
+
+  get canUnlock$() {
+    return this.canUnlockSubject.asObservable();
   }
 
   async setSession(session: Session, unlockMode: UnlockMode): Promise<void> {
