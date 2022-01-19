@@ -13,10 +13,11 @@ export class HomePage {
   password: string;
   canUnlock = false;
   hasSession = false;
+  hideScreen = false;
 
   constructor(private auth: AuthService, private vault: VaultService) {
     this.vault.canUnlock$.subscribe((x) => (this.canUnlock = x));
-    Device.setHideScreenOnBackground(true);
+    Device.isHideScreenOnBackgroundEnabled().then((x) => (this.hideScreen = x));
   }
 
   signIn() {
