@@ -57,20 +57,15 @@ export class VaultService {
   }
 
   async setSession(session: Session, unlockMode: UnlockMode): Promise<void> {
-    console.log('start setSession');
     await this.setUnlockMode(unlockMode);
     this.session = session;
-    console.log('setSession set value');
     await this.vault.setValue(this.sessionKey, session);
-    console.log('end setSession');
   }
 
   async clearSession(): Promise<void> {
-    console.log('clearSession');
     await this.vault.clear();
     this.session = undefined;
     await this.setUnlockMode('NeverLock');
-    console.log('end clearSession', await this.vault.isEmpty());
   }
 
   async restoreSession(): Promise<Session> {
@@ -92,7 +87,6 @@ export class VaultService {
     let type: VaultType;
     let deviceSecurityType: DeviceSecurityType;
 
-    console.log('setUnlockMode', unlockMode);
     switch (unlockMode) {
       case 'Device':
         type = VaultType.DeviceSecurity;
@@ -119,12 +113,10 @@ export class VaultService {
         deviceSecurityType = DeviceSecurityType.SystemPasscode;
     }
 
-    console.log('setUnlockMode update');
     await this.vault.updateConfig({
       ...this.vault.config,
       type,
       deviceSecurityType,
     });
-    console.log('end setUnlockMode', unlockMode);
   }
 }
