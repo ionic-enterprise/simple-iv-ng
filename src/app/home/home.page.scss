@@ -1,4 +1,31 @@
+.main-content {
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+}
+.user {
+  align-items: center;
+  display: flex;
+  flex-flow: column;
+  flex: 1 0 auto;
+  justify-content: center;
+  margin: 1em;
+  text-align: center;
+}
 .unlock-app {
-  margin-top: 3em;
+  align-items: center;
+  display: flex;
+  flex-flow: column;
+  flex: 1 0 auto;
+  justify-content: center;
+  margin: 1em;
   font-size: xx-large;
+}
+
+.unlock-mode {
+  align-items: center;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  margin: 1em;
 }

@@ -14,15 +14,15 @@ export class HomePage {
   canUnlock = false;
   hasSession = false;
 
-  constructor(private auth: AuthService, private vault: VaultService) {
+  constructor(public auth: AuthService, public vault: VaultService) {
     this.vault.canUnlock$.subscribe((x) => (this.canUnlock = x));
     Device.setHideScreenOnBackground(true);
+    this.init();
   }
-
   async signIn() {
     await this.auth.login();
-    const hasPasscode = await Device.isSystemPasscodeSet();
-    this.vault.setUnlockMode(hasPasscode ? 'Device' : 'NeverLock');
+    // const hasPasscode = await Device.isSystemPasscodeSet();
+    // this.vault.setUnlockMode(hasPasscode ? 'Device' : 'NeverLock');
     this.hasSession = true;
   }
 
@@ -31,8 +31,19 @@ export class HomePage {
     this.hasSession = false;
   }
 
+  async logout() {
+    await this.auth.logout();
+  }
+
   async unlock() {
     await this.vault.vault.unlock();
     this.hasSession = true;
+  }
+
+  private async init() {
+    this.hasSession = await this.auth.isAuthenticated();
+    const id = await this.auth.getIdToken();
+    console.log('init', this.hasSession, id);
+
   }
 }

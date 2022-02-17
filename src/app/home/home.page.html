@@ -1,13 +1,23 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title> Home </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="main-content">
-  <div class="unlock-app ion-text-center" *ngIf="canUnlock" (click)="unlock()">
-    <ion-icon name="lock-open-outline"></ion-icon>
-    <div>Unlock</div>
+<ion-content>
+  <div class="main-content">
+    <div class="user" *ngIf="auth.user$ | async as user">
+      <h1>Welcome</h1>
+      <p>{{user.email}}</p>
+    </div>
+    <div class="unlock-app ion-text-center" *ngIf="canUnlock" (click)="unlock()">
+      <ion-icon name="lock-open-outline"></ion-icon>
+      <div>Unlock</div>
+    </div>
+
+    <div class="unlock-mode">
+      Current Unlock Mode: {{vault.unlockMode}}
+    </div>
   </div>
 </ion-content>
 
